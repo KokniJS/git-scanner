@@ -4,16 +4,17 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { IFetchReposAnswer } from './types/fetch.repos.interface';
+import { IFetchListRepos } from './types/fetch-list.repos.interface';
 import { ParamsDetailsDto } from './dto/params-get-details.repos.dto';
+import { IFetchDetailsRepos } from './types/fetch-details.repos.inreface';
 
 @Injectable()
 export class GithubService {
   private state = 0;
   private readonly gitApiUrl = 'https://api.github.com';
 
-  async fetchRepos(token: string): Promise<IFetchReposAnswer[]> {
-    let allRepos: IFetchReposAnswer[] = [];
+  async fetchRepos(token: string): Promise<IFetchListRepos[]> {
+    let allRepos: IFetchListRepos[] = [];
     let page = 1;
 
     while (true) {
@@ -51,7 +52,9 @@ export class GithubService {
     return allRepos;
   }
 
-  async fetchRepoDetails(paramsDetailsDto: ParamsDetailsDto): Promise<any> {
+  async fetchRepoDetails(
+    paramsDetailsDto: ParamsDetailsDto,
+  ): Promise<IFetchDetailsRepos> {
     this.validateOrIncreaseState();
     const { owner, repo, token } = paramsDetailsDto;
     try {
@@ -106,7 +109,7 @@ export class GithubService {
   ) {
     const headers = this.headers(token);
     let fileCount = 0;
-    let ymlContent: string | null = null;
+    let ymlContent;
 
     const walk = async (path = '.') => {
       const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
